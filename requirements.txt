@@ -1,0 +1,4 @@
+keras
+tensorflow-gpu
+h5py
+pillow
