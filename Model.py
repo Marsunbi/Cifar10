@@ -3,12 +3,14 @@ from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from keras.preprocessing.image import ImageDataGenerator
 from keras.datasets import cifar10
 from keras.utils import np_utils
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 import numpy as np
 
 np.random.seed(1337)
 
-batch_size = 56
-epochs = 200
+weights = R'weights/weights-improvement-{epoch:02d}-{val_loss:.4f}-LargerSeed.hdf5'
+batch_size = 100
+epochs = 500
 num_classes = 10
 
 (train_features, train_labels), (test_features, test_labels) = cifar10.load_data()
@@ -56,11 +58,16 @@ datagen = ImageDataGenerator(
     zoom_range=0.2,
 )
 
+early_stopping = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=15, verbose=1, mode='min')
+checkpoint = ModelCheckpoint(weights, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+callback_list = [early_stopping, checkpoint]
+
 model.fit_generator(datagen.flow(train_features, train_labels,
                     batch_size=batch_size),
                     epochs=epochs,
+                    callbacks=callback_list,
                     validation_data=(test_features, test_labels),
                     verbose=1)
 
-model.save('cifar10_model.h5')
+model.save('cifar10_model_v2.h5')
 
